@@ -1,35 +1,37 @@
-name: Build OpenCV Android arm64
+name: build-opencv
 
 on:
-  workflow_dispatch: # Permet de lancer le build manuellement depuis l'onglet Actions de GitHub
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - build.py
+      - .github/workflows/build-opencv.yml
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.12"
 
-      - name: Install system dependencies
+      # Meme version de CMake que sur Kaggle (3.31.10)
+      - name: Installer CMake 3.31.10
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential unzip
+          python -m pip install cmake==3.31.10
+          cmake --version
 
-      - name: Run OpenCV Build Script
-        run: |
-          python build.py
+      - name: Compiler OpenCV 5.1.0 (video, arm64-v8a)
+        run: python build.py
 
-      - name: Upload Archive Artifact
+      - name: Publier l'archive
         uses: actions/upload-artifact@v4
         with:
           name: video-arm64
-          path: output/video-arm64.tar.gz
+          path: out/video-arm64.tar.gz
           if-no-files-found: error
-          retention-days: 7
-          
+          retention-days: 30
