@@ -30,5 +30,6 @@ jobs:
         with:
           name: video-arm64
           path: output/video-arm64.tar.gz
+          if-no-files-found: error
           retention-days: 7
           
